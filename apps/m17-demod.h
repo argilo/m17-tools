@@ -2,7 +2,7 @@
 
 #pragma once
 
+#include "DeviationError.h"
 #include "FirFilter.h"
 #include "PhaseEstimator.h"
-#include "DeviationError.h"
 #include "SymbolEvm.h"

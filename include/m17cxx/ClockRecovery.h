@@ -3,26 +3,26 @@
 #pragma once
 
 #include <array>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <numeric>
-#include <cassert>
 
 namespace mobilinkd
 {
 
 /**
  * Calculate the phase estimates for each sample position.
- * 
+ *
  * This performs a running calculation of the phase of each bit position.
  * It is very noisy for individual samples, but quite accurate when
  * averaged over an entire M17 frame.
- * 
+ *
  * It is designed to be used to calculate the best bit position for each
  * frame of data.  Samples are collected and averaged.  When update() is
  * called, the best sample index and clock are estimated, and the counters
  * reset for the next frame.
- * 
+ *
  * It starts counting bit 0 as the first bit received after a reset.
  *
  * This is very efficient as it only uses addition and subtraction for
@@ -76,21 +76,17 @@ class ClockRecovery
 
         // Find falling edge.
         bool is_positive = false;
-        for (size_t i = 0; i != SAMPLES_PER_SYMBOL; ++i)
-        {
+        for (size_t i = 0; i != SAMPLES_PER_SYMBOL; ++i) {
             FloatType phase = estimates_[i];
 
-            if (!is_positive && phase > 0)
-            {
+            if (!is_positive && phase > 0) {
                 is_positive = true;
-            }
-            else if (is_positive && phase < 0)
-            {
+            } else if (is_positive && phase < 0) {
                 index = i;
                 break;
             }
         }
-        
+
         sample_index_ = index == 0 ? SAMPLES_PER_SYMBOL - 1 : index - 1;
     }
 
@@ -104,12 +100,9 @@ class ClockRecovery
         int8_t offset = sample_index_ - prev_sample_index_;
 
         // When in spec, the clock should drift by less than 1 sample per frame.
-        if (offset >= MAX_OFFSET) [[unlikely]]
-        {
+        if (offset >= MAX_OFFSET) [[unlikely]] {
             offset -= SAMPLES_PER_SYMBOL;
-        }
-        else if (offset <= -MAX_OFFSET) [[unlikely]]
-        {
+        } else if (offset <= -MAX_OFFSET) [[unlikely]] {
             offset += SAMPLES_PER_SYMBOL;
         }
 
@@ -120,8 +113,7 @@ class ClockRecovery
     {
         // update_sample_index_() must be called first.
 
-        if (frame_count_ == 0) [[unlikely]]
-        {
+        if (frame_count_ == 0) [[unlikely]] {
             prev_sample_index_ = sample_index_;
             offset_ = 0.0;
             clock_ = 1.0;
@@ -135,11 +127,8 @@ class ClockRecovery
     }
 
 public:
-    ClockRecovery()
-    {
-        estimates_.fill(0);
-    }
-    
+    ClockRecovery() { estimates_.fill(0); }
+
     /**
      * Update clock recovery with the given sample.  This will advance the
      * current sample index by 1.
@@ -148,18 +137,16 @@ public:
     {
         FloatType dy = (sample - prev_sample_);
 
-        if (sample + prev_sample_ < 0)
-        {
+        if (sample + prev_sample_ < 0) {
             // Invert the phase estimate when sample midpoint is less than 0.
             dy = -dy;
         }
 
         prev_sample_ = sample;
-        
+
         estimates_[index_] += dy;
         index_ += 1;
-        if (index_ == SAMPLES_PER_SYMBOL)
-        {
+        if (index_ == SAMPLES_PER_SYMBOL) {
             index_ = 0;
         }
         sample_count_ += 1;
@@ -182,56 +169,48 @@ public:
      * Return the current sample index.  This will always be in the range of
      * [0..SAMPLES_PER_SYMBOL).
      */
-    uint8_t current_index() const
-    {
-        return index_;
-    }
+    uint8_t current_index() const { return index_; }
 
     /**
      * Return the estimated sample clock increment based on the last update.
-     * 
+     *
      * The value is only valid after samples have been collected and update()
      * has been called.
      */
-    FloatType clock_estimate() const
-    {
-        return clock_;
-    }
+    FloatType clock_estimate() const { return clock_; }
 
     /**
      * Return the estimated "best sample index" based on the last update.
-     * 
+     *
      * The value is only valid after samples have been collected and update()
      * has been called.
      */
-    uint8_t sample_index() const
-    {
-        return sample_index_;
-    }
-    
+    uint8_t sample_index() const { return sample_index_; }
+
     /**
      * Update the sample index and clock estimates, and reset the state for
      * the next frame of data.
-     * 
+     *
      * @pre index_ = 0
      * @pre sample_count_ > 0
-     * 
+     *
      * After this is called, sample_index() and clock_estimate() will have
      * valid, updated results.
-     * 
+     *
      * The more samples between calls to update, the more accurate the
      * estimates will be.
-     * 
+     *
      * @return true if the preconditions are met and the update has been
      *  performed, otherwise false.
      */
     bool update()
     {
-        if (!(sample_count_ != 0 && index_ == 0)) return false;
+        if (!(sample_count_ != 0 && index_ == 0))
+            return false;
 
         update_sample_index_();
         update_clock_();
-               
+
         frame_count_ = std::min(0x1000, 1 + frame_count_);
         sample_count_ = 0;
         estimates_.fill(0);
@@ -239,4 +218,4 @@ public:
     }
 };
 
-} // mobilinkd
+} // namespace mobilinkd

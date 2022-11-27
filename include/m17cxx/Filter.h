@@ -5,10 +5,8 @@
 namespace mobilinkd
 {
 
-template <typename NumericType>
-struct FilterBase
-{
-	virtual NumericType operator()(NumericType input) = 0;
+template <typename NumericType> struct FilterBase {
+    virtual NumericType operator()(NumericType input) = 0;
 };
 
-} // mobilinkd
+} // namespace mobilinkd

@@ -8,7 +8,8 @@
 #include <complex>
 #include <cstddef>
 
-namespace mobilinkd {
+namespace mobilinkd
+{
 
 /**
  * Data carrier detection using the difference of two DFTs, one in-band and
@@ -26,8 +27,7 @@ namespace mobilinkd {
  * Note: the input to this DCD must be unfiltered (raw) baseband input.
  */
 template <typename FloatType, size_t SampleRate, size_t Accuracy = 1000>
-struct DataCarrierDetect
-{
+struct DataCarrierDetect {
     using ComplexType = std::complex<FloatType>;
     using NDFT = NSlidingDFT<FloatType, SampleRate, SampleRate / Accuracy, 2>;
 
@@ -39,10 +39,9 @@ struct DataCarrierDetect
     FloatType level_ = 0.0;
     bool triggered_ = false;
 
-    DataCarrierDetect(
-        size_t freq1, size_t freq2,
-        FloatType ltrigger = 2.0, FloatType htrigger = 5.0)
-    : dft_({freq1, freq2}), ltrigger_(ltrigger), htrigger_(htrigger)
+    DataCarrierDetect(size_t freq1, size_t freq2, FloatType ltrigger = 2.0,
+                      FloatType htrigger = 5.0)
+        : dft_({freq1, freq2}), ltrigger_(ltrigger), htrigger_(htrigger)
     {
     }
 
@@ -62,15 +61,14 @@ struct DataCarrierDetect
      */
     void update()
     {
-    	level_ = level_ * 0.8 + 0.2 * (level_1 / level_2);
-    	level_1 = 0.0;
-    	level_2 = 0.0;
+        level_ = level_ * 0.8 + 0.2 * (level_1 / level_2);
+        level_1 = 0.0;
+        level_2 = 0.0;
         triggered_ = triggered_ ? level_ > ltrigger_ : level_ > htrigger_;
     }
-
 
     FloatType level() const { return level_; }
     bool dcd() const { return triggered_; }
 };
 
-} // mobilinkd
+} // namespace mobilinkd

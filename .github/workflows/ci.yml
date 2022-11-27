@@ -3,6 +3,17 @@ name: CI
 on: [push, pull_request]
 
 jobs:
+  check-formatting:
+    name: Check C++ Formatting
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+    - uses: actions/checkout@v2
+    - uses: DoozyX/clang-format-lint-action@v0.15
+      with:
+        source: './apps ./include/m17cxx'
+        extensions: 'h,cpp'
+        clangFormatVersion: 14
   linux-build:
     name: Linux CI
     strategy:
