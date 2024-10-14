@@ -33,7 +33,7 @@ jobs:
             libasound2-dev \
             --no-install-recommends
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Configure RtAudio
         run: |
           cd thirdparty/rtaudio
@@ -68,7 +68,7 @@ jobs:
     name: Windows CI
     runs-on: "windows-2019"
     steps:
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: conda-incubator/setup-miniconda@v3
         with:
           miniconda-version: "latest"
           auto-activate-base: true
@@ -83,7 +83,7 @@ jobs:
       - name: Create Conda Env
         run: conda create -n M17 vs2019_win-64 cmake ninja pkg-config boost-cpp gtest gmock gtest libcodec2
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Configure RtAudio 
         run: |
           cd thirdparty/rtaudio
@@ -113,7 +113,7 @@ jobs:
         run: cmake --build . --config Release --target install
       - name: Add DLLs
         run: |
-          cd C:\Miniconda3\envs\M17
+          cd "$env:CONDA\envs\M17"
           xcopy Library\bin\api-ms-win-crt-time-l1-1-0.dll D:\bin\
           xcopy Library\bin\api-ms-win-crt-string-l1-1-0.dll D:\bin\
           xcopy Library\bin\api-ms-win-crt-convert-l1-1-0.dll D:\bin\
@@ -131,7 +131,7 @@ jobs:
           xcopy Library\bin\libwinpthread-1.dll D:\bin\
           xcopy Library\bin\libgcc_s_seh-1.dll D:\bin\
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: M17-Tools-Win-x64
           path: D:/bin/
